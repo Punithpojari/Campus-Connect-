@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Routes, Route } from "react-router";
+import { useState,useEffect } from "react";
+import { Routes, Route, useNavigate } from "react-router";
 
 import "./App.css";
 
@@ -11,21 +11,79 @@ import EventsPage from "./pages/EventsPage";
 import EventDetailsPage from "./pages/EventDetailsPage";
 import AboutPage from "./pages/AboutPage";
 
-import { initialEvents } from "./data/events";
-
 function App() {
-    const [events, setEvents] = useState(initialEvents);
+
+    const [events, setEvents] = useState([]);
+    const [editingEvent,setEditingEvent] = useState(null);
+    const navigate = useNavigate();
+
+
+        useEffect(()=>{
+        fetch("http://localhost:5001/api/events")
+        .then((response)=>response.json())
+        .then((data)=>{
+            setEvents(data);
+        });
+    }, []);
 
     function handleAddEvent(newEvent) {
-        setEvents([...events, newEvent]);
+        fetch("http://localhost:5001/api/events",{
+            method: "POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body: JSON.stringify(newEvent)
+        }).then((response) => response.json())
+        .then((data) =>{
+            console.log(data);
+            fetch("http://localhost:5001/api/events")
+            .then((response) => response.json())
+            .then((data) => {
+                setEvents(data);
+            });
+        });
     }
 
     function handleDeleteEvent(eventId) {
-        const updatedEvents = events.filter(function (event) {
-            return event.id !== eventId;
+        fetch(`http://localhost:5001/api/events/${eventId}`, {
+            method: "DELETE"
+        }).then((response)=>response.json())
+        .then((data)=>{
+            console.log(data);
+            fetch("http://localhost:5001/api/events")
+            .then((response)=>response.json())
+            .then((data)=>{
+                setEvents(data);
+            });
         });
+    }
 
-        setEvents(updatedEvents);
+    function handleUpdateEvent(eventId, updatedEvent) {
+        fetch(`http://localhost:5001/api/events/${eventId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(updatedEvent)
+        })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log(data);
+            setEvents((currentEvents) => currentEvents.map((event) =>
+                event.id === eventId ? { ...event, ...updatedEvent } : event
+            ));
+            setEditingEvent(null);
+        });
+    }
+
+
+    function handleEditEvent(eventId){
+        const selectedEvent = events.find(function(event){
+            return event.id === eventId;
+        });
+        setEditingEvent(selectedEvent);
+        navigate("/");
+
     }
 
     return (
@@ -39,7 +97,10 @@ function App() {
                         <HomePage
                             events={events}
                             onAddEvent={handleAddEvent}
+                            onUpdateEvent={handleUpdateEvent}
                             onDeleteEvent={handleDeleteEvent}
+                            onEditEvent={handleEditEvent}
+                            editingEvent = {editingEvent}
                         />
                     }
                 />
@@ -50,6 +111,8 @@ function App() {
                         <EventsPage
                             events={events}
                             onDeleteEvent={handleDeleteEvent}
+                            onEditEvent={handleEditEvent}
+                           
                         />
                     }
                 />

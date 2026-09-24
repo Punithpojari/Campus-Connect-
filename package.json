@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "dotenv": "^18.0.3",
+    "mongoos": "^0.0.1-security",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router": "^8.4.0"
