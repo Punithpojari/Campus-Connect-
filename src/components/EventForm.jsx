@@ -104,9 +104,9 @@ function EventForm({ onAddEvent, onUpdateEvent, editingEvent}) {
     };
 
     if (editingEvent !== null) {
-      onUpdateEvent(editingEvent.id, eventData);
+      onUpdateEvent(editingEvent._id, eventData);
     } else {
-      onAddEvent({ id: Date.now(), ...eventData });
+      onAddEvent(eventData);
     }
 
     setFormData({

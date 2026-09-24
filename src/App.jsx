@@ -11,6 +11,13 @@ import EventsPage from "./pages/EventsPage";
 import EventDetailsPage from "./pages/EventDetailsPage";
 import AboutPage from "./pages/AboutPage";
 
+function normalizeEvent(event) {
+    return {
+        ...event,
+        _id: event._id,
+    };
+}
+
 function App() {
 
     const [events, setEvents] = useState([]);
@@ -22,7 +29,7 @@ function App() {
         fetch("http://localhost:5001/api/events")
         .then((response)=>response.json())
         .then((data)=>{
-            setEvents(data);
+            setEvents(data.map(normalizeEvent));
         });
     }, []);
 
@@ -39,7 +46,7 @@ function App() {
             fetch("http://localhost:5001/api/events")
             .then((response) => response.json())
             .then((data) => {
-                setEvents(data);
+                setEvents(data.map(normalizeEvent));
             });
         });
     }
@@ -53,7 +60,7 @@ function App() {
             fetch("http://localhost:5001/api/events")
             .then((response)=>response.json())
             .then((data)=>{
-                setEvents(data);
+                setEvents(data.map(normalizeEvent));
             });
         });
     }
@@ -70,7 +77,7 @@ function App() {
         .then((data) => {
             console.log(data);
             setEvents((currentEvents) => currentEvents.map((event) =>
-                event.id === eventId ? { ...event, ...updatedEvent } : event
+                event._id === eventId ? normalizeEvent({ ...event, ...updatedEvent }) : event
             ));
             setEditingEvent(null);
         });
@@ -79,7 +86,7 @@ function App() {
 
     function handleEditEvent(eventId){
         const selectedEvent = events.find(function(event){
-            return event.id === eventId;
+            return event._id === eventId;
         });
         setEditingEvent(selectedEvent);
         navigate("/");
